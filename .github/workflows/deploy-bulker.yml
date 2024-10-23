@@ -47,6 +47,7 @@ jobs:
       - name: Deploy Bulker to Koyeb
         run: |
           koyeb service create ${{ github.event.inputs.org_id }} \
+            --app ${{ github.event.inputs.org_id }}/bulker
             --docker jitsucom/bulker:latest \
             --env BULKER_BATCH_RUNNER_DEFAULT_BATCH_SIZE=10000 \
             --env BULKER_CONFIG_SOURCE=${{ secrets.BULKER_CONFIG_SOURCE }} \
