@@ -57,4 +57,4 @@ jobs:
             --env BULKER_INPUT_DATA=${{ github.event.inputs.data }} \
             --ports 8080:http \
             --routes /${{ github.event.inputs.org_id }}/bulker:8080 \
-            --instant-type free
+            --instance-type free
