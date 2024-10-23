@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       syncId = syncData.id;
 
       // Now use the resolved value in fetch
-      const provisionBulker = await fetch('https://api.github.com/repos/portcullis-co/portcullis-app/actions/workflows/WORKFLOW_ID/dispatches', {
+      const provisionBulker = await fetch('https://api.github.com/repos/portcullis-co/portcullis-app/actions/workflows/11474765079/dispatches', {
           method: 'POST',
           headers: {
               'Content-Type': 'application/json'
