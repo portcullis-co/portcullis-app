@@ -15,7 +15,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -26,14 +26,21 @@ jobs:
           api_token: ${{ secrets.KOYEB_TOKEN }}
           github_token: ${{ secrets.REPO_TOKEN }}
 
+      - name: Set PORTCULLIS_VERSION if not set
+        run: |
+          if [ -z "${{ env.PORTCULLIS_VERSION }}" ]; then
+            echo "PORTCULLIS_VERSION=v1.0.0" >> $GITHUB_ENV
+          fi
+
       - name: Create Koyeb Application and Service
         run: |
           # First create the application (this is idempotent - won't fail if it exists)
-          koyeb app create portcullis-${{ env.PORTCULLIS_VERSION }} || true
-          
+          APP_NAME="portcullis-${{ env.PORTCULLIS_VERSION }}"
+          koyeb app create $APP_NAME || true
+
           # Then create the service within the application
           koyeb service create bulker \
-            --app portcullis-${{ env.PORTCULLIS_VERSION }}\
+            --app $APP_NAME \
             --docker jitsucom/bulker:latest \
             --env BULKER_BATCH_RUNNER_DEFAULT_BATCH_SIZE=10000 \
             --env BULKER_CONFIG_SOURCE=${{ secrets.BULKER_CONFIG_SOURCE }} \
