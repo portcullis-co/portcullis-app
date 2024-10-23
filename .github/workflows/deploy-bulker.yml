@@ -41,6 +41,3 @@ jobs:
           BULKER_KAFKA_TOPIC_PREFIX: ${{ github.event.inputs.org_id }}
           REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
         run: koyeb service redeploy ${{ github.event.inputs.org_id }}/bulker --image jitsucom/bulker:latest --env-file .env
-
-      - name: Output deployment status
-        run: echo "Bulker deployed successfully for customer: ${{ github.event.inputs.org_id }}"
