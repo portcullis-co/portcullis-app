@@ -26,12 +26,6 @@ jobs:
           api_token: ${{ secrets.KOYEB_TOKEN }}
           github_token: ${{ secrets.REPO_TOKEN }}
 
-      - name: Set PORTCULLIS_VERSION if not set
-        run: |
-          if [ -z "${{ env.PORTCULLIS_VERSION }}" ]; then
-            echo "PORTCULLIS_VERSION=v1.0.0" >> $GITHUB_ENV
-          fi
-
       - name: Create Koyeb Application and Service
         run: |
           # First create the application (this is idempotent - won't fail if it exists)
@@ -57,5 +51,4 @@ jobs:
             --env BULKER_INPUT_DATA=${{ github.event.inputs.data }} \
             --ports 8080:http \
             --routes /${{ github.event.inputs.org_id }}/bulker:8080 \
-            --regions aws-us-east-1 \
-            --instance-type micro
+            --regions aws-us-east-1
