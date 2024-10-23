@@ -28,12 +28,15 @@ jobs:
 
       - name: Create Koyeb Application and Service
         run: |
-          # First create the application (this is idempotent - won't fail if it exists)
-          koyeb app create ${{ github.event.inputs.org_id }} || true
+          # Create a shorter app name using the first 8 characters of the org_id
+          APP_NAME="bulker-${{{ github.event.inputs.org_id }}:0:8}"
+          
+          # Create the application (this is idempotent - won't fail if it exists)
+          koyeb app create $APP_NAME || true
           
           # Then create the service within the application
           koyeb service create bulker \
-            --app ${{ github.event.inputs.org_id }} \
+            --app $APP_NAME \
             --docker jitsucom/bulker:latest \
             --env BULKER_BATCH_RUNNER_DEFAULT_BATCH_SIZE=10000 \
             --env BULKER_CONFIG_SOURCE=${{ secrets.BULKER_CONFIG_SOURCE }} \
