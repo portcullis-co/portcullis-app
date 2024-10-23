@@ -29,7 +29,7 @@ jobs:
       - name: Set PORTCULLIS_VERSION if not set
         run: |
           if [ -z "${{ env.PORTCULLIS_VERSION }}" ]; then
-            echo `PORTCULLIS_VERSION=red-coral` >> $GITHUB_ENV
+            echo "PORTCULLIS_VERSION=red-coral" >> $GITHUB_ENV
           fi
 
       - name: Create Koyeb Application and Service
