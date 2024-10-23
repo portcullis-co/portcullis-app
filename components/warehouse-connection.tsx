@@ -54,7 +54,6 @@ import { DropdownMenu } from './ui/dropdown-menu'
   }
 
   interface LinkDetails {
-    internal_type: string;
     logo: string;
     redirect_url: string;
     internal_warehouse: string;
@@ -206,7 +205,6 @@ import { DropdownMenu } from './ui/dropdown-menu'
         organization: linkDetails?.organization,
         internal_warehouse: internal_warehouse,
         link_type: selectedWarehouse?.name,
-        internal_type: linkDetails?.internal_type,
         destination_config,
         internal_credentials: credentialsData.credentials,
       };
@@ -239,7 +237,7 @@ import { DropdownMenu } from './ui/dropdown-menu'
       const supabase = createClient();
       const { data, error } = await supabase
           .from('links')
-          .select('internal_type, logo, redirect_url, organization, internal_warehouse')
+          .select('logo, redirect_url, organization, internal_warehouse')
           .eq('invite_token', token)
           .single();
 
@@ -256,7 +254,6 @@ import { DropdownMenu } from './ui/dropdown-menu'
       }
 
       const details: LinkDetails = {
-          internal_type: data.internal_type ?? '',
           internal_warehouse: data.internal_warehouse,
           organization: data.organization,
           logo: data.logo,

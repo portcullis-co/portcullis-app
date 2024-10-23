@@ -7,7 +7,7 @@ export async function POST(request: Request) {
   try {
     const supabase = createClient();
     const { userId, orgId } = auth();
-    const { logo, redirectUrl, internal_warehouse, internal_type } = await request.json();
+    const { logo, redirectUrl, internal_warehouse, } = await request.json();
 
     if (!orgId) {
       return NextResponse.json({ error: 'Unauthorized: No organization ID' }, { status: 401 });
@@ -20,7 +20,6 @@ export async function POST(request: Request) {
       .insert({ 
         invite_token,
         internal_warehouse,
-        internal_type,
         logo,
         redirect_url: redirectUrl,
         organization: orgId

@@ -13,7 +13,7 @@ export async function GET(request: Request) {
 
   const { data: warehouses, error } = await supabase
     .from('warehouses')
-    .select('id, internal_type, created_at')
+    .select('id, created_at')
     .eq('organization', organizationId);
 
   if (error) {
@@ -33,16 +33,16 @@ export async function POST(request: Request) {
     }
     
     try {
-      const { internal_type, credentials } = await request.json();
+      const { credentials } = await request.json();
   
       // Validate input
-      if (!internal_type || !credentials) {
+      if (!credentials) {
         return NextResponse.json({ error: 'Type and credentials are required' }, { status: 400 });
       }
   
       const { data, error } = await supabase
         .from('warehouses')
-        .insert({ internal_type, credentials, organization: orgId, slug  })
+        .insert({ credentials, organization: orgId, slug  })
         .select()
         .single();
   
