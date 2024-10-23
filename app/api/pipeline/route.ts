@@ -14,10 +14,9 @@ interface ShowTablesResponse {
     data: Table[];
 }
 
-// Define the destination config schema to match the required structure
 const destinationConfigSchema = z.object({
     type: z.string(),
-    credentials: z.record(z.any()),  // Allow any key-value pairs
+    credentials: z.record(z.any()),
     options: z.object({
         mode: z.enum(["stream", "batch"]).default("stream"),
         batchSize: z.number().default(10000),
@@ -25,35 +24,32 @@ const destinationConfigSchema = z.object({
         mode: "stream",
         batchSize: 10000
     }),
-}).strict();  // Ensure no extra properties
+}).strict();
 
-// Validation schema for the request body
 const requestSchema = z.object({
     organization: z.string().min(1),
     internal_warehouse: z.string().min(1),
     link_type: z.string().min(1),
-    internal_credentials: z.record(z.any()),  // Allow any key-value pairs
+    internal_credentials: z.record(z.any()),
     destination_config: destinationConfigSchema,
-}).strict();  // Ensure no extra properties
+}).strict();
 
-// Create Octokit instance
 const octokit = new Octokit({
     auth: process.env.GITHUB_TOKEN
 });
 
-async function getAllTables(request: NextRequest): Promise<string[]> {
+async function getAllTables(credentials: Record<string, any>): Promise<string[]> {
     try {
-        const body = await request.json();
         const clickhouse = ClickhouseClient({
-            host: body.internal_credentials.host,  // Replace with your ClickHouse host
-            username: body.internal_credentials.username,  // Replace with your ClickHouse username
-            password: body.internal_credentials.password,  // Replace with your ClickHouse password
-            database: body.internal_credentials.database,  // Replace with your ClickHouse database
+            url: credentials.host,
+            username: credentials.username,
+            password: credentials.password,
+            database: credentials.database,
         });
 
         const result = await clickhouse.query({
             query: 'SHOW TABLES',
-            format: 'JSON',  // You can choose the format (JSON or any supported)
+            format: 'JSON',
         });
 
         const tables: ShowTablesResponse = await result.json();
@@ -66,21 +62,20 @@ async function getAllTables(request: NextRequest): Promise<string[]> {
     }
 }
 
-async function getTableData(request: NextRequest) {
+async function getTableData(credentials: Record<string, any>) {
     try {
-        const body = await request.json();
         const clickhouse = ClickhouseClient({
-            host: body.internal_credentials.host,  // Replace with your ClickHouse host
-            username: body.internal_credentials.username,  // Replace with your ClickHouse username
-            password: body.internal_credentials.password,  // Replace with your ClickHouse password
-            database: body.internal_credentials.database,  // Replace with your ClickHouse database
+            url: credentials.host,
+            username: credentials.username,
+            password: credentials.password,
+            database: credentials.database,
         });
 
         // Fetch the list of tables
-        const tables = await getAllTables(request);
+        const tables = await getAllTables(credentials);
 
         // Define an object to hold all table data
-        const allTableData: Record<string, any> = {};  // Dynamic keys with 'any' type for values
+        const allTableData: Record<string, any> = {};
     
         // Loop through each table and fetch its data
         for (const table of tables) {
@@ -98,16 +93,13 @@ async function getTableData(request: NextRequest) {
     }
 }
     
-// POST handler
 export async function POST(request: NextRequest) {
     const supabase = createClient();
     let syncId: string | null = null;
-    const data = await getTableData(request);
+
     try {
-        // Parse request body first
-        const rawBody = await request.json().catch(() => {
-            throw new Error('Invalid JSON in request body');
-        });
+        // Parse request body once
+        const rawBody = await request.json();
 
         // Validate request body
         const validationResult = requestSchema.safeParse(rawBody);
@@ -122,11 +114,15 @@ export async function POST(request: NextRequest) {
         }
 
         const body = validationResult.data;
-
+        
+        // Get table data using the credentials from the validated body
+        const data = await getTableData(body.internal_credentials);
+        const tables = await getAllTables(body.internal_credentials);
+        
         // Normalize link_type case
         const linkType = body.link_type.toLowerCase();
 
-        // Create sync record with error handling
+        // Create sync record
         const { data: syncData, error: syncError } = await supabase
             .from('syncs')
             .insert({
@@ -157,10 +153,6 @@ export async function POST(request: NextRequest) {
 
         syncId = syncData.id;
 
-        // Call getAllTables function with the request
-        const tables = await getAllTables(request);
-        console.log('Tables fetched:', tables);
-
         try {
             await octokit.request('POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches', {
                 owner: 'portcullis-co',
@@ -168,8 +160,8 @@ export async function POST(request: NextRequest) {
                 workflow_id: 'deploy-bulker.yml',
                 ref: 'bulker',
                 inputs: {
-                    org_id: body.organization,  // Map your 'organization' field to 'org_id'
-                    data: JSON.stringify(data),  // Convert data to JSON string
+                    org_id: body.organization,
+                    data: JSON.stringify(data),
                 },
                 headers: {
                     'X-GitHub-Api-Version': '2022-11-28'
@@ -177,7 +169,6 @@ export async function POST(request: NextRequest) {
             });
         } catch (githubError: any) {
             console.error('GitHub API error:', githubError);
-                
             return NextResponse.json({
                 success: false,
                 syncId,
@@ -186,7 +177,6 @@ export async function POST(request: NextRequest) {
             }, { status: 422 });
         }
 
-        // Return success response
         return NextResponse.json({
             success: true,
             syncId,
@@ -195,7 +185,6 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error('ETL process failed:', error);
-
         return NextResponse.json({
             success: false,
             syncId,
