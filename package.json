@@ -17,6 +17,7 @@
     "@google-cloud/bigquery": "^7.9.1",
     "@maktouch/kysely-bigquery": "^1.1.0",
     "@mui/material": "^6.1.2",
+    "@octokit/core": "^6.1.2",
     "@pulumi/docker": "^4.5.7",
     "@pulumi/pulumi": "^3.137.0",
     "@radix-ui/react-dialog": "^1.1.1",

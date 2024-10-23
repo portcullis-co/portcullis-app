@@ -125,7 +125,7 @@ import { DropdownMenu } from './ui/dropdown-menu'
     const appLogoRef = useRef<HTMLDivElement>(null)
     const destLogoRef = useRef<HTMLDivElement>(null)
 
-    const runPipeline = async (organization: string, destination: string ) => {
+    const runPipeline = async (organization: string, destination: string) => {
       const supabase = createClient();
       const internal_warehouse = linkDetails?.internal_warehouse;
     
@@ -134,17 +134,12 @@ import { DropdownMenu } from './ui/dropdown-menu'
         throw new Error('Internal warehouse is undefined. Cannot fetch credentials.');
       }
     
-      console.log('Internal warehouse value:', internal_warehouse);
-    
-      console.log('Fetching credentials for internal warehouse:', internal_warehouse);
-      console.log('Querying for warehouse ID:', internal_warehouse);
-
       const { data: credentialsData, error: credentialsError } = await supabase
         .from('warehouses')
         .select('*')
         .eq('id', internal_warehouse)
         .maybeSingle();
-
+    
       if (credentialsError) {
         console.error('Error fetching warehouse:', credentialsError);
         throw new Error(`Failed to fetch warehouse: ${credentialsError.message}`);
@@ -160,16 +155,61 @@ import { DropdownMenu } from './ui/dropdown-menu'
         throw new Error('Credentials are missing in the warehouse data');
       }
     
+      // Format credentials based on warehouse type
+      const getFormattedCredentials = () => {
+        switch (selectedWarehouse?.name) {
+          case 'Clickhouse':
+            return {
+              username: credentials.username,
+              password: credentials.password,
+              host: credentials.host,
+              database: credentials.database,
+              // Only include port if it's provided
+              ...(credentials.port && { port: parseInt(credentials.port, 10) }),
+            };
+          case 'Snowflake':
+            return {
+              username: credentials.username,
+              password: credentials.password,
+              account: credentials.account,
+              database: credentials.database,
+              schema: credentials.schema,
+              warehouse: credentials.warehouse,
+            };
+          case 'BigQuery':
+            return {
+              projectId: credentials.projectId,
+              keyFilename: credentials.keyFilename,
+            };
+          case 'Postgres':
+            return {
+              username: credentials.username,
+              password: credentials.password,
+              host: credentials.host,
+              port: parseInt(credentials.port, 10),
+              database: credentials.database,
+            };
+          default:
+            throw new Error(`Unsupported warehouse type: ${selectedWarehouse?.name}`);
+        }
+      };
+    
+      const destination_config = {
+        type: selectedWarehouse?.name?.toLowerCase(), // Convert to lowercase for consistency
+        credentials: getFormattedCredentials(),
+        options: {
+          mode: "stream"
+        }
+      };
+    
       const requestBody = {
         organization: linkDetails?.organization,
         internal_warehouse: internal_warehouse,
         link_type: selectedWarehouse?.name,
         internal_type: linkDetails?.internal_type,
-        link_credentials: credentials,
+        destination_config,
         internal_credentials: credentialsData.credentials,
       };
-      console.log(selectedWarehouse?.name)
-      // Map warehouse types to their respective sync routes
     
       console.log('Sending request to pipeline API:', JSON.stringify(requestBody, null, 2));
     
