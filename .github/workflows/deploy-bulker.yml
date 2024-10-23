@@ -26,6 +26,12 @@ jobs:
           api_token: ${{ secrets.KOYEB_TOKEN }}
           github_token: ${{ secrets.REPO_TOKEN }}
 
+      - name: Set PORTCULLIS_VERSION if not set
+        run: |
+          if [ -z "${{ env.PORTCULLIS_VERSION }}" ]; then
+            echo `PORTCULLIS_VERSION=red-coral` >> $GITHUB_ENV
+          fi
+
       - name: Create Koyeb Application and Service
         run: |
           # First create the application (this is idempotent - won't fail if it exists)
