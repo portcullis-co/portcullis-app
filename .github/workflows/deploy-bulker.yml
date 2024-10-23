@@ -32,7 +32,7 @@ jobs:
           koyeb app create portcullis-${{ env.PORTCULLIS_VERSION }} || true
           
           # Then create the service within the application
-          koyeb service create bulker-${{{ github.event.inputs.org_id }}:0:8} \
+          koyeb service create bulker \
             --app portcullis-${{ env.PORTCULLIS_VERSION }}\
             --docker jitsucom/bulker:latest \
             --env BULKER_BATCH_RUNNER_DEFAULT_BATCH_SIZE=10000 \
