@@ -40,32 +40,32 @@ jobs:
           primary_region = "iad"
           
         [env]
-            BULKER_BATCH_RUNNER_DEFAULT_BATCH_SIZE=10000
-            BULKER_CONFIG_SOURCE="${{ secrets.BULKER_CONFIG_SOURCE }}"
-            BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN="${{ secrets.BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN }}"
-            BULKER_KAFKA_BOOTSTRAP_SERVERS="${{ secrets.BULKER_KAFKA_BOOTSTRAP_SERVERS }}"
-            BULKER_KAFKA_SSL=true
-            BULKER_CLICKHOUSE_HOST="${{ secrets.BULKER_CLICKHOUSE_HOST }}"
-            BULKER_CLICKHOUSE_DATABASE="${{ secrets.BULKER_CLICKHOUSE_DATABASE }}"
-            BULKER_CLICKHOUSE_SSL=true
-            BULKER_CLICKHOUSE_USERNAME="${{ secrets.BULKER_CLICKHOUSE_USERNAME }}"
-            BULKER_CLICKHOUSE_PASSWORD="${{ secrets.BULKER_CLICKHOUSE_PASSWORD }}"
-            BULKER_KAFKA_TOPIC_PREFIX="${{ github.event.inputs.org_id }}"
-            REPO_TOKEN="${{ secrets.REPO_TOKEN }}"
-            BULKER_INPUT_DATA="${{ github.event.inputs.data }}"
-            BULKER_INSTANCE_ID="{{ github.event.inputs.instance_id }}"
+          BULKER_BATCH_RUNNER_DEFAULT_BATCH_SIZE=10000
+          BULKER_CONFIG_SOURCE="${{ secrets.BULKER_CONFIG_SOURCE }}"
+          BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN="${{ secrets.BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN }}"
+          BULKER_KAFKA_BOOTSTRAP_SERVERS="${{ secrets.BULKER_KAFKA_BOOTSTRAP_SERVERS }}"
+          BULKER_KAFKA_SSL=true
+          BULKER_CLICKHOUSE_HOST="${{ secrets.BULKER_CLICKHOUSE_HOST }}"
+          BULKER_CLICKHOUSE_DATABASE="${{ secrets.BULKER_CLICKHOUSE_DATABASE }}"
+          BULKER_CLICKHOUSE_SSL=true
+          BULKER_CLICKHOUSE_USERNAME="${{ secrets.BULKER_CLICKHOUSE_USERNAME }}"
+          BULKER_CLICKHOUSE_PASSWORD="${{ secrets.BULKER_CLICKHOUSE_PASSWORD }}"
+          BULKER_KAFKA_TOPIC_PREFIX="${{ github.event.inputs.org_id }}"
+          REPO_TOKEN="${{ secrets.REPO_TOKEN }}"
+          BULKER_INPUT_DATA="${{ github.event.inputs.data }}"
+          BULKER_INSTANCE_ID="${{ github.event.inputs.instance_id }}"
         EOF
         env:
           BULKER_CONFIG_SOURCE: ${{ secrets.BULKER_CONFIG_SOURCE }}
-          BULKER_BATCH_RUNNER_DEFAULT_BATCH_SIZE=10000
-          BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN=${{ secrets.BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN }}
-          BULKER_KAFKA_BOOTSTRAP_SERVERS=${{ secrets.BULKER_KAFKA_BOOTSTRAP_SERVERS }}
-          BULKER_KAFKA_SSL=true
-          BULKER_CLICKHOUSE_HOST=${{ secrets.BULKER_CLICKHOUSE_HOST }}
-          BULKER_CLICKHOUSE_DATABASE=${{ secrets.BULKER_CLICKHOUSE_DATABASE }}
-          BULKER_CLICKHOUSE_SSL=true
-          BULKER_CLICKHOUSE_USERNAME=${{ secrets.BULKER_CLICKHOUSE_USERNAME }}
-          BULKER_CLICKHOUSE_PASSWORD=${{ secrets.BULKER_CLICKHOUSE_PASSWORD }}
-          BULKER_KAFKA_TOPIC_PREFIX=${{ github.event.inputs.org_id }}
-          REPO_TOKEN=${{ secrets.REPO_TOKEN }}
-          BULKER_INPUT_DATA=${{ github.event.inputs.data }}
+          BULKER_BATCH_RUNNER_DEFAULT_BATCH_SIZE: 10000
+          BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN: ${{ secrets.BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN }}
+          BULKER_KAFKA_BOOTSTRAP_SERVERS: ${{ secrets.BULKER_KAFKA_BOOTSTRAP_SERVERS }}
+          BULKER_KAFKA_SSL: true
+          BULKER_CLICKHOUSE_HOST: ${{ secrets.BULKER_CLICKHOUSE_HOST }}
+          BULKER_CLICKHOUSE_DATABASE: ${{ secrets.BULKER_CLICKHOUSE_DATABASE }}
+          BULKER_CLICKHOUSE_SSL: true
+          BULKER_CLICKHOUSE_USERNAME: ${{ secrets.BULKER_CLICKHOUSE_USERNAME }}
+          BULKER_CLICKHOUSE_PASSWORD: ${{ secrets.BULKER_CLICKHOUSE_PASSWORD }}
+          BULKER_KAFKA_TOPIC_PREFIX: ${{ github.event.inputs.org_id }}
+          REPO_TOKEN: ${{ secrets.REPO_TOKEN }}
+          BULKER_INPUT_DATA: ${{ github.event.inputs.data }}
