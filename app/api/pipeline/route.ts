@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
                 inputs: {
                     org_id: body.organization,
                     data: JSON.stringify(data),
-                    sync_id: syncId,
+                    instance_id: syncId,
                 },
                 headers: {
                     'X-GitHub-Api-Version': '2022-11-28'

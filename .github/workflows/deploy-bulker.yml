@@ -11,6 +11,10 @@ on:
         description: 'Data to send to Bulker'
         required: true
         type: string
+      instance_id:
+        description: 'Bulker Instance ID '
+        required: true
+        type: string
 
 jobs:
   deploy:
@@ -49,6 +53,7 @@ jobs:
             BULKER_KAFKA_TOPIC_PREFIX="${{ github.event.inputs.org_id }}"
             REPO_TOKEN="${{ secrets.REPO_TOKEN }}"
             BULKER_INPUT_DATA="${{ github.event.inputs.data }}"
+            BULKER_INSTANCE_ID="{{ github.event.inputs.instance_id }}"
         EOF
         env:
           BULKER_CONFIG_SOURCE: ${{ secrets.BULKER_CONFIG_SOURCE }}
