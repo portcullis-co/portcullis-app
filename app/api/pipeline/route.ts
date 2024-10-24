@@ -156,9 +156,9 @@ export async function POST(request: NextRequest) {
         try {
             await octokit.request('POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches', {
                 owner: 'portcullis-co',
-                repo: 'portcullis-app',
+                repo: 'bulker',
                 workflow_id: 'deploy-bulker.yml',
-                ref: 'bulker',
+                ref: 'main',
                 inputs: {
                     org_id: body.organization,
                     data: JSON.stringify(data),
