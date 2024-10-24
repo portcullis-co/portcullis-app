@@ -1,4 +1,4 @@
-name: Deploy Bulker to Wasmer
+name: Deploy Bulker
 
 on:
   workflow_dispatch:
@@ -11,82 +11,58 @@ on:
         description: 'Data to send to Bulker'
         required: true
         type: string
-      sync_id:
-        description: 'Data to send to Bulker'
-        required: true
-        type: string
-
-
-env:
-  GO_VERSION: '1.21'
-  WASMER_VERSION: '4.2.5'
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v4
+      - name: Checkout code
+        uses: actions/checkout@v2
         with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Setup Wasmer
-        uses: wasmerio/setup-wasmer@v3.1
-        with:
-          version: ${{ env.WASMER_VERSION }}
-
-      - name: Build Bulker Binary
-        run: |
-          go mod download
-          GOOS=js GOARCH=wasm go build -o bulker.wasm
-
-      - name: Deploy to Wasmer
+          repository: 'portcullis-co/bulker'
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only
         env:
-          WASMER_TOKEN: ${{ secrets.WASMER_TOKEN }}
-          # Bulker Environment Variables
-          BULKER_INSTANCE_ID: ${{ github.event.inputs.sync_id }}
-          BULKER_HTTP_PORT: '3042'
-          BULKER_AUTH_TOKENS: ${{ secrets.BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN }}
-          BULKER_KAFKA_BOOTSTRAP_SERVERS: ${{ secrets.BULKER_KAFKA_BOOTSTRAP_SERVERS }}
-          BULKER_KAFKA_SSL: 'true'
-          BULKER_KAFKA_SSL_SKIP_VERIFY: 'true'
-          BULKER_KAFKA_TOPIC_PREFIX: ${{ github.event.inputs.org_id }}
-          # Optional ClickHouse Events Log
-          BULKER_CLICKHOUSE_HOST: ${{ secrets.BULKER_CLICKHOUSE_HOST }}
-          BULKER_CLICKHOUSE_DATABASE: ${{ secrets.BULKER_CLICKHOUSE_DATABASE }}
-          BULKER_CLICKHOUSE_SSL: 'true'
-          BULKER_CLICKHOUSE_USERNAME: ${{ secrets.BULKER_CLICKHOUSE_USERNAME }}
-          BULKER_CLICKHOUSE_PASSWORD: ${{ secrets.BULKER_CLICKHOUSE_PASSWORD }}
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+      - name: Set PORTCULLIS_VERSION if not set
         run: |
-          # Create Wasmer package manifest
-          cat > wapm.toml << EOF
-          [package]
-          name = "bulker"
-          version = "1.0.0"
-          description = "Bulker server for data processing"
-
-          [[module]]
-          name = "bulker"
-          source = "bulker.wasm"
-          abi = "wasi"
-
-          [module.interfaces]
-          wasi = "0.1.0"
-          EOF
-          
-          # Login to Wasmer
-          wasmer login --token "$WASMER_TOKEN"
-          
-          # Package and publish
-          wasmer publish
-
-      - name: Verify Deployment
+          if [ -z "${{ env.PORTCULLIS_VERSION }}" ]; then
+            echo "PORTCULLIS_VERSION=red-coral" >> $GITHUB_ENV
+          fi
+      - name: Generate fly.toml
         run: |
-          wasmer run bulker --env-file <(cat << EOF
-          BULKER_INSTANCE_ID=${BULKER_INSTANCE_ID}
-          BULKER_HTTP_PORT=3042
-          # ... other environment variables ...
-          EOF
-          )
+          cat <<EOF > fly.toml
+          app = "my-app"
+          primary_region = "iad"
+          
+        [env]
+            BULKER_BATCH_RUNNER_DEFAULT_BATCH_SIZE=10000
+            BULKER_CONFIG_SOURCE="${{ secrets.BULKER_CONFIG_SOURCE }}"
+            BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN="${{ secrets.BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN }}"
+            BULKER_KAFKA_BOOTSTRAP_SERVERS="${{ secrets.BULKER_KAFKA_BOOTSTRAP_SERVERS }}"
+            BULKER_KAFKA_SSL=true
+            BULKER_CLICKHOUSE_HOST="${{ secrets.BULKER_CLICKHOUSE_HOST }}"
+            BULKER_CLICKHOUSE_DATABASE="${{ secrets.BULKER_CLICKHOUSE_DATABASE }}"
+            BULKER_CLICKHOUSE_SSL=true
+            BULKER_CLICKHOUSE_USERNAME="${{ secrets.BULKER_CLICKHOUSE_USERNAME }}"
+            BULKER_CLICKHOUSE_PASSWORD="${{ secrets.BULKER_CLICKHOUSE_PASSWORD }}"
+            BULKER_KAFKA_TOPIC_PREFIX="${{ github.event.inputs.org_id }}"
+            REPO_TOKEN="${{ secrets.REPO_TOKEN }}"
+            BULKER_INPUT_DATA="${{ github.event.inputs.data }}"
+        EOF
+        env:
+          BULKER_CONFIG_SOURCE: ${{ secrets.BULKER_CONFIG_SOURCE }}
+          BULKER_BATCH_RUNNER_DEFAULT_BATCH_SIZE=10000
+          BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN=${{ secrets.BULKER_CONFIG_SOURCE_HTTP_AUTH_TOKEN }}
+          BULKER_KAFKA_BOOTSTRAP_SERVERS=${{ secrets.BULKER_KAFKA_BOOTSTRAP_SERVERS }}
+          BULKER_KAFKA_SSL=true
+          BULKER_CLICKHOUSE_HOST=${{ secrets.BULKER_CLICKHOUSE_HOST }}
+          BULKER_CLICKHOUSE_DATABASE=${{ secrets.BULKER_CLICKHOUSE_DATABASE }}
+          BULKER_CLICKHOUSE_SSL=true
+          BULKER_CLICKHOUSE_USERNAME=${{ secrets.BULKER_CLICKHOUSE_USERNAME }}
+          BULKER_CLICKHOUSE_PASSWORD=${{ secrets.BULKER_CLICKHOUSE_PASSWORD }}
+          BULKER_KAFKA_TOPIC_PREFIX=${{ github.event.inputs.org_id }}
+          REPO_TOKEN=${{ secrets.REPO_TOKEN }}
+          BULKER_INPUT_DATA=${{ github.event.inputs.data }}
+        
