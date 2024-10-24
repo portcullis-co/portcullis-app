@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       instance_id:
-        description: 'Bulker Instance ID '
+        description: 'Bulker Instance ID'
         required: true
         type: string
 
@@ -69,4 +69,3 @@ jobs:
           BULKER_KAFKA_TOPIC_PREFIX=${{ github.event.inputs.org_id }}
           REPO_TOKEN=${{ secrets.REPO_TOKEN }}
           BULKER_INPUT_DATA=${{ github.event.inputs.data }}
-        
